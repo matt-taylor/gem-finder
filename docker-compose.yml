@@ -1,0 +1,15 @@
+services:
+  gem_finder:
+    command: tail -f /dev/null
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/gem
+      - ..:/local
+      - bundle-cache:/usr/local/bundle:delegated
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+
+volumes:
+  bundle-cache:

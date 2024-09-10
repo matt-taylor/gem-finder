@@ -1,0 +1,61 @@
+---
+invalid_config:
+  log_level: error
+  behavior: exit
+gems:
+  rails:
+    on_failure:
+      log_level: warn # on failure, log a warn message
+      behavior: exit
+    version_threshold:
+      minor: 3 # within the last 3 minor releases
+    server: true # when set to true, defaults to https://rubygems.org
+
+  shoryuken:
+    on_failure:
+      log_level: info # on failure, log a info message
+      behavior: skip
+    version_threshold:
+      # Must be within the most current version released
+      # If above is true, must be within the last 2 minor releases
+      # If above is true, must be within the last 3 patches released
+      major: 0 # within the current major version
+      minor: 2 # within the last 3 minor releases
+      patch: 3 # within the last 3 patches released
+    server: true # when set to true, defaults to https://rubygems.org
+
+  redis:
+    on_failure:
+      log_level: error
+      behavior: raise # on failure, log error and exit(1)
+    enforce_insync: true # Ensure gem is up to date
+    server:
+      source: https://rubygems.org
+
+  faraday:
+    on_failure:
+      log_level: error
+      behavior: exit # on failure, log error and exit(1)
+    enforce_insync: true
+    # version_threshold:
+
+      # For most gems, this is effectively the same as `enforce_insync: true`
+      # major: 0
+      # minor: 6
+      # patch: 0
+    server:
+      source: https://rubygems.org
+
+  custom_gem:
+    enforce_insync: true
+    server: true
+  sidekiq:
+    version_threshold:
+      releases: 5 # within the last 5 releases
+    git:
+      owner: sidekiq # Github root page for the gem
+
+
+
+
+
