@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    gem_finder (0.0.1)
+    gem_enforcer (0.0.1)
       class_composer (>= 1.0)
       faraday
       octokit
@@ -89,7 +89,7 @@ DEPENDENCIES
   activesupport
   faker
   faraday (< 2.6)
-  gem_finder!
+  gem_enforcer!
   pry
   pry-byebug
   rake (~> 12.0)

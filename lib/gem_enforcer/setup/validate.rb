@@ -2,11 +2,11 @@
 
 require "yaml"
 
-require "gem_finder/setup/helper/retrieval"
-require "gem_finder/setup/helper/on_failure"
-require "gem_finder/setup/helper/version"
+require "gem_enforcer/setup/helper/retrieval"
+require "gem_enforcer/setup/helper/on_failure"
+require "gem_enforcer/setup/helper/version"
 
-module GemFinder
+module GemEnforcer
   module Setup
     class Validate
       attr_reader :gem_name, :params, :validation_status

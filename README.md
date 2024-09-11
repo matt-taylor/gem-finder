@@ -1,13 +1,13 @@
-# GemFinder
+# GemEnforcer
 
-`GemFinder` is
+`GemEnforcer` is
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'gem_finder'
+gem 'gem_enforcer'
 ```
 
 And then execute:
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install gem_finder
+    $ gem install gem_enforcer
 
 
 ## Development

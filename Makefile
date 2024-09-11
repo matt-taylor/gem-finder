@@ -1,6 +1,6 @@
 .PHONY: bash build bundle rspec
 
-APP_NAME?=gem_finder
+APP_NAME?=gem_enforcer
 
 build: #: Build the containers that we'll need
 	docker-compose build --pull

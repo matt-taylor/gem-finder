@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GemFinder
+module GemEnforcer
   module Setup
     module Helper
       module OnFailure
@@ -43,7 +43,7 @@ module GemFinder
         end
 
         def execute_on_failure!(behavior:, msg: on_failure_default_message)
-          GemFinder.logger.public_send(@on_failure_log_level, "Validation failed for #{gem_name}. Current Version is #{current_version}. #{msg}")
+          GemEnforcer.logger.public_send(@on_failure_log_level, "Validation failed for #{gem_name}. Current Version is #{current_version}. #{msg}")
 
           case @on_failure_behavior.to_sym
           when :raise

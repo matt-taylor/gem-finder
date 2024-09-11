@@ -5,8 +5,8 @@ RUN cd /tmp && curl -L --output ghr.tar.gz https://github.com/tcnksm/ghr/release
 WORKDIR /gem
 COPY Gemfile /gem/Gemfile
 
-COPY gem_finder.gemspec /gem/gem_finder.gemspec
-COPY lib/gem_finder/version.rb /gem/lib/gem_finder/version.rb
+COPY gem_enforcer.gemspec /gem/gem_enforcer.gemspec
+COPY lib/gem_enforcer/version.rb /gem/lib/gem_enforcer/version.rb
 
 
 RUN gem update --system && gem install bundler && bundle install --jobs=3 --retry=3 && \

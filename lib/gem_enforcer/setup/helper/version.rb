@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GemFinder
+module GemEnforcer
   module Setup
     module Helper
       module Version

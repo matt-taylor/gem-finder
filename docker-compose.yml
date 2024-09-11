@@ -1,5 +1,5 @@
 services:
-  gem_finder:
+  gem_enforcer:
     command: tail -f /dev/null
     build:
       context: .

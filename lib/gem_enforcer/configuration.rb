@@ -2,16 +2,16 @@
 
 require "class_composer"
 require "logger"
-require "gem_finder/errors"
+require "gem_enforcer/errors"
 
-module GemFinder
+module GemEnforcer
   class Configuration
     include ClassComposer::Generator
 
     GITHUB_ACCESS_TOKEN = Proc.new do
       token = ENV.fetch("GITHUB_TOKEN") do
         ENV.fetch("BUNDLE_GITHUB__COM") do
-          raise GemFinder::Error, "Expected access token in `GITHUB_TOKEN` or `BUNDLE_GITHUB__COM`"
+          raise GemEnforcer::Error, "Expected access token in `GITHUB_TOKEN` or `BUNDLE_GITHUB__COM`"
         end
       end
       if token.end_with?(":x-oauth-basic")
@@ -23,9 +23,9 @@ module GemFinder
 
     DEFAULT_YAML_PATH = Proc.new do
       if defined?(Rails)
-        "#{Rails.root}/config/gem_finder.yml"
+        "#{Rails.root}/config/gem_enforcer.yml"
       else
-        "/gem/gem_finder.yml"
+        "/gem/gem_enforcer.yml"
       end
     end
 

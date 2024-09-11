@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require_relative "lib/gem_finder/version"
+require_relative "lib/gem_enforcer/version"
 
 Gem::Specification.new do |spec|
-  spec.name    = "gem_finder"
-  spec.version = GemFinder::VERSION
+  spec.name    = "gem_enforcer"
+  spec.version = GemEnforcer::VERSION
   spec.authors = ["Matt Taylor"]
   spec.email   = ["mattius.taylor@gmail.com"]
 
   spec.summary     = "Long form of the description"
   spec.description = "Provide the ability to validate targetted gems are up to date before executing commands"
-  spec.homepage    = "https://github.com/matt-taylor/gem_finder"
+  spec.homepage    = "https://github.com/matt-taylor/gem_enforcer"
   spec.license     = "MIT"
 
   spec.required_ruby_version = Gem::Requirement.new(">= 3.2")

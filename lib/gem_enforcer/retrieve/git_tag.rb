@@ -2,10 +2,10 @@
 
 require "octokit"
 
-module GemFinder
+module GemEnforcer
   module Retrieve
     class GitTag
-      def initialize(owner:, access_token: GemFinder.github_access_token)
+      def initialize(owner:, access_token: GemEnforcer.github_access_token)
         @access_token = access_token
         @owner = owner
       end

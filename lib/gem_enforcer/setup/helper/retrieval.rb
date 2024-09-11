@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module GemFinder
+module GemEnforcer
   module Setup
     module Helper
       module Retrieval
@@ -31,7 +31,7 @@ module GemFinder
           server = params.dig("server")
 
           if server == true
-            @retrieval_source = GemFinder::DEFAULT_SERVER_SOURCE
+            @retrieval_source = GemEnforcer::DEFAULT_SERVER_SOURCE
             return true
           end
 

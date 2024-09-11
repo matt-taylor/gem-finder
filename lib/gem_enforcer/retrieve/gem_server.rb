@@ -2,7 +2,7 @@
 
 require "faraday"
 
-module GemFinder
+module GemEnforcer
   module Retrieve
     class GemServer
       def initialize(source: DEFAULT_SOURCE)

@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-require "gem_finder/configuration"
-require "gem_finder/errors"
-require "gem_finder/retrieve"
-require "gem_finder/setup"
-require "gem_finder/version"
+require "gem_enforcer/configuration"
+require "gem_enforcer/errors"
+require "gem_enforcer/retrieve"
+require "gem_enforcer/setup"
+require "gem_enforcer/version"
 
-module GemFinder
+module GemEnforcer
   DEFAULT_SERVER_SOURCE = "https://rubygems.org"
   def self.configure
     yield configuration if block_given?
   end
 
   def self.configuration
-    @configuration ||= GemFinder::Configuration.new
+    @configuration ||= GemEnforcer::Configuration.new
   end
 
   def self.configuration=(object)
-    raise ConfigError, "Expected configuration to be a GemFinder::Configuration" unless object.is_a?(GemFinder::Configuration)
+    raise ConfigError, "Expected configuration to be a GemEnforcer::Configuration" unless object.is_a?(GemEnforcer::Configuration)
 
     @configuration = object
   end

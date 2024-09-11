@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "gem_finder/retrieve/gem_server"
-require "gem_finder/retrieve/git_tag"
+require "gem_enforcer/retrieve/gem_server"
+require "gem_enforcer/retrieve/git_tag"
 
-module GemFinder
+module GemEnforcer
   module Retrieve
     module_function
 

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "yaml"
-require "gem_finder/setup/validate"
+require "gem_enforcer/setup/validate"
 
-module GemFinder
+module GemEnforcer
   module Setup
     module_function
 
@@ -30,7 +30,7 @@ module GemFinder
 
     def config_yml
       @read_config_yml ||= begin
-        path = GemFinder.configuration.yml_config_path
+        path = GemEnforcer.configuration.yml_config_path
         file = File.read(path)
         erb = ERB.new(file)
 

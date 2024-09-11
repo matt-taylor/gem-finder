@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe GemFinder::Setup::Validate do
+RSpec.describe GemEnforcer::Setup::Validate do
   let(:instance) { described_class.new(name: gem_name, **params) }
   let(:params) do
     {
@@ -16,7 +16,7 @@ RSpec.describe GemFinder::Setup::Validate do
   let(:owner) { "matt-taylor" }
   before do
     # nullify log output
-    GemFinder.configuration.logger = Logger.new("/dev/null")
+    GemEnforcer.configuration.logger = Logger.new("/dev/null")
   end
 
   describe "#initialize" do
@@ -186,7 +186,7 @@ RSpec.describe GemFinder::Setup::Validate do
       shared_examples "version_execution logger expectations" do
         context "with default log_level" do
           it "outputs to default logger" do
-            expect(GemFinder.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
+            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
 
             subject
           end
@@ -196,7 +196,7 @@ RSpec.describe GemFinder::Setup::Validate do
           let(:on_failure) { { "on_failure" => { "log_level" => "error" } } }
 
           it "outputs to custom logger" do
-            expect(GemFinder.logger).to receive(:error).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
+            expect(GemEnforcer.logger).to receive(:error).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
 
             subject
           end
@@ -210,7 +210,7 @@ RSpec.describe GemFinder::Setup::Validate do
           let(:on_failure) { { "on_failure" => { "behavior" => "raise" } } }
 
           it do
-            expect { subject }.to raise_error(GemFinder::ValidationError, /Validation failed for #{gem_name}/)
+            expect { subject }.to raise_error(GemEnforcer::ValidationError, /Validation failed for #{gem_name}/)
           end
         end
 
@@ -290,7 +290,7 @@ RSpec.describe GemFinder::Setup::Validate do
           let(:major) { 0 }
 
           it "logs correctly" do
-            expect(GemFinder.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match major version threshold/)
+            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match major version threshold/)
 
             subject
           end
@@ -302,7 +302,7 @@ RSpec.describe GemFinder::Setup::Validate do
           let(:minor) { 0 }
 
           it "logs correctly" do
-            expect(GemFinder.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match minor version threshold/)
+            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match minor version threshold/)
 
             subject
           end
@@ -314,7 +314,7 @@ RSpec.describe GemFinder::Setup::Validate do
           let(:patch) { 0 }
 
           it "logs correctly" do
-            expect(GemFinder.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match patch version threshold/)
+            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match patch version threshold/)
 
             subject
           end

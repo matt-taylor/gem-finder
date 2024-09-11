@@ -9,7 +9,7 @@ if ENV['CI'] == 'true'
   end
 end
 
-require "gem_finder"
+require "gem_enforcer"
 require "faker"
 require "pry"
 require "active_support"
