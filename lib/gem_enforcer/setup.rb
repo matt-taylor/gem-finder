@@ -8,24 +8,37 @@ module GemEnforcer
     module_function
 
     def validate_yml!
-      errors = config_yml["gems"].map do |name, metadata|
+      @errors = config_yml["gems"].map do |name, metadata|
         validator = Validate.new(name: name, **metadata)
         validations << validator
 
-        validator.error_status
-      end.compact
+        validator.error_status unless validator.valid_config?
+      end.flatten.compact
       return true if errors.empty?
 
       log_level = config_yml.dig("invalid_config", "log_level") || "error"
       behavior = config_yml.dig("invalid_config", "behavior") || "exit"
+
+      false
+    end
+
+    def errors
+      @errors ||= []
     end
 
     def validations
       @validations ||= []
     end
 
-    def run_validations!(behavior: nil)
-      validations.each { _1.run_validation!(behavior: behavior) }
+    def run_validations!
+      validations.each { _1.run_validation! }
+    end
+
+    def execute!
+      if validate_yml!
+
+      else
+      end
     end
 
     def config_yml

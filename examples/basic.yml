@@ -1,0 +1,25 @@
+---
+gems:
+  rails: # Enforce the gem Rails
+    server: true # Use the default gem server (https://rubygems.org)
+    behaviors: # Array of different behavior -- Order matters here
+      - version_enforce:
+          releases: 3 # Behavior 1 will trigger when the current version is greater than the 3rd most recent and beyond
+        on_failure:
+          log_level: error # Log Level to output
+          # message: Custom Message to output # There is a default message and this is optional but takes precedence
+          behavior: exit # When behavior is triggered, exit the application immediately
+      - version_enforce:
+          releases: 2 # Behavior 2 will trigger when the current version is 2nd most recent and beyond
+        on_failure:
+          log_level: warn
+          # Message can have interpolated strings: `version` => current version, `versions_behind` => versions behind, `max_version` => most recent version
+          message: "You are running rails v%{version} which is %{versions_behind} versions behind. Please consider updating"
+  sidekiq:
+    server: https://rubygems.org # Input your custom server here
+    behaviors:
+      - version_enforce:
+          insync: true # Behavior 1 triggered as soon as version is not the most recent
+        # on_failure: This is the default on_failure behavior when none is provided
+        #   log_level: error
+        #   behavior: # none Logs message and returns

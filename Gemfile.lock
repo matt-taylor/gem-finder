@@ -9,28 +9,14 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.1.4)
-      base64
-      bigdecimal
-      concurrent-ruby (~> 1.0, >= 1.0.2)
-      connection_pool (>= 2.2.5)
-      drb
-      i18n (>= 1.6, < 2)
-      minitest (>= 5.1)
-      mutex_m
-      tzinfo (~> 2.0)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    base64 (0.2.0)
-    bigdecimal (3.1.8)
     byebug (11.1.3)
     class_composer (1.0.2)
     coderay (1.1.3)
     concurrent-ruby (1.3.4)
-    connection_pool (2.4.1)
     diff-lcs (1.5.1)
     docile (1.4.1)
-    drb (2.2.1)
     faker (3.4.2)
       i18n (>= 1.8.11, < 2)
     faraday (2.5.2)
@@ -40,8 +26,6 @@ GEM
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
     method_source (1.1.0)
-    minitest (5.25.1)
-    mutex_m (0.2.0)
     octokit (9.1.0)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
@@ -78,17 +62,13 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.0)
     simplecov_json_formatter (0.1.4)
-    tzinfo (2.0.6)
-      concurrent-ruby (~> 1.0)
 
 PLATFORMS
   aarch64-linux
   ruby
 
 DEPENDENCIES
-  activesupport
   faker
-  faraday (< 2.6)
   gem_enforcer!
   pry
   pry-byebug

@@ -4,147 +4,356 @@ RSpec.describe GemEnforcer::Setup::Validate do
   let(:instance) { described_class.new(name: gem_name, **params) }
   let(:params) do
     {
-      **retrieval,
-      **on_failure,
-      **version,
+      behaviors:,
+      server:,
+      git:,
+    }.compact
+  end
+  let(:major_versions) { 5 }
+  let(:minor_versions) { 4 }
+  let(:patch_versions) { 3 }
+  let(:version_list) do
+    major_versions.times.map do |maj|
+      minor_versions.times.map do |min|
+        patch_versions.times.map do |pat|
+          Gem::Version.new("#{maj + 1}.#{min}.#{pat}")
+        end
+      end
+    end.flatten.shuffle #shuffle to ensure the class validations methods sort things correctly
+  end
+  let(:gem_name) { "rails_base" }
+  let(:message) { "this is a custom message" }
+  let(:on_failure) { { } } # empty is a valid on_failure
+  let(:version_enforce) { { insync: true } }
+  let(:server) { true }
+  let(:git) { "matt-taylor" }
+  let(:custom_behavior) do
+    {
+      on_failure:,
+      version_enforce:,
+    }.compact
+  end
+  let(:behaviors) { [custom_behavior]}
+  let(:exit_behavior) do
+    {
+      on_failure: { behavior: :exit },
+      version_enforce:,
     }
   end
-  let(:gem_name) { "gem_name" }
-  let(:retrieval) { { "server" => true } }
-  let(:on_failure) { { } } # empty is a valid on_failure
-  let(:version) { { "enforce_insync" => true } }
-  let(:owner) { "matt-taylor" }
+  let(:raise_behavior) do
+    {
+      on_failure: { behavior: :raise },
+      version_enforce:,
+    }
+  end
+  let(:default_behavior) do
+    {
+      version_enforce:,
+    }
+  end
   before do
     # nullify log output
     GemEnforcer.configuration.logger = Logger.new("/dev/null")
   end
 
-  describe "#initialize" do
-    context "with invalid config" do
-      shared_examples "invalid config errors" do
+  describe "#valid_config?" do
+    subject(:valid_config) { instance.valid_config? }
+
+    context "when invalid" do
+      context "with invalid failure" do
+      end
+
+      context "with invalid version" do
+        let(:version_enforce) { { insync: false } }
+        let(:git) { nil }
         it do
-          expect(instance.error_status).to include(error_string)
+          is_expected.to eq(false)
         end
 
-        it "validation status is false" do
-          expect(instance.validation_status).to be(false)
+        it "correct errors" do
+          valid_config
+
+          expect(instance.error_status.length).to eq(1)
+          expect(instance.error_status.first).to include("#{gem_name}.behaviors[0].version_enforce.insync")
         end
       end
 
       context "with invalid retrieval" do
-        context "with server" do
-          context "when false" do
-            let(:retrieval) { { "server" => false } }
-            let(:error_string) { "#{gem_name}.retrieval: Missing retrieval type. Expected `server` or `git`" }
-
-            include_examples "invalid config errors"
-          end
-
-          context "when not a hash" do
-            let(:retrieval) { { "server" => [] } }
-            let(:error_string) { "#{gem_name}.retrieval.server: Missing source" }
-
-            include_examples "invalid config errors"
-          end
-
-          context "when hash does not include source" do
-            let(:retrieval) { { "server" => { "incorrect_key" => "not a source" } } }
-            let(:error_string) { "#{gem_name}.retrieval.server: Missing source" }
-
-            include_examples "invalid config errors"
-          end
+        it do
+          is_expected.to eq(false)
         end
 
-        context "with git" do
-          context "when not a hash" do
-            let(:retrieval) { { "git" => [] } }
-            let(:error_string) { "#{gem_name}.retrieval.git: Missing owner" }
+        it "correct errors" do
+          valid_config
 
-            include_examples "invalid config errors"
-          end
-
-          context "when hash does not include owner" do
-            let(:retrieval) { { "git" => { "incorrect_key" => "not a source" } } }
-            let(:error_string) { "#{gem_name}.retrieval.git: Missing owner" }
-
-            include_examples "invalid config errors"
-          end
+          expect(instance.error_status.length).to eq(1)
+          expect(instance.error_status.first).to include("#{gem_name}.retrieval")
         end
       end
 
-      context "with invalid on_failure" do
-        context "when not a Hash" do
-          let(:on_failure) { { "on_failure" => [] } }
-          let(:error_string) { "#{gem_name}.on_failure: Expected value hash with :behavior and/or :log_level keys" }
-
-          include_examples "invalid config errors"
+      context "when no behaviors" do
+        let(:behaviors) { [] }
+        let(:git) { nil }
+        it do
+          is_expected.to eq(false)
         end
 
-        context "with invalid behavior key" do
-          let(:on_failure) { { "on_failure" => { "behavior" => described_class::ALLOWED_ON_FAILURE.sample.to_s + "x" } } }
-          let(:error_string) { "#{gem_name}.on_failure.behavior: Expected behavior to be in #{described_class::ALLOWED_ON_FAILURE}" }
+        it "correct errors" do
+          valid_config
 
-          include_examples "invalid config errors"
-        end
-      end
-
-      context "with invalid version" do
-        context "with both enforce_insync and validate_version" do
-          let(:version) { { "enforce_insync" => true, "version_threshold" => { "releases" => 5} } }
-          let(:error_string) { "#{gem_name}.version: Must only contain `enforce_insync` or `version_threshold`" }
-
-          include_examples "invalid config errors"
-        end
-
-        context "when enforce_insync is false" do
-          let(:version) { { "enforce_insync" => false } }
-          let(:error_string) { "#{gem_name}.version.version_threshold: Expected keys to contain [#{described_class::ALLOWED_VERSION_REALEASE}] or #{described_class::ALLOWED_VERSION_SEMVER}" }
-
-          include_examples "invalid config errors"
-        end
-
-        context "with invalid version_threshold" do
-          context "when bad major" do
-            let(:version) { { "version_threshold" => { "major" => "1", "minor" => 2, "patch" => 3 } } }
-            let(:error_string) { "#{gem_name}.version.version_threshold.major: Expected value to be an Integer" }
-
-            include_examples "invalid config errors"
-          end
-
-          context "when bad minor" do
-            let(:version) { { "version_threshold" => { "major" => 1, "minor" => "2", "patch" => 3 } } }
-            let(:error_string) { "#{gem_name}.version.version_threshold.minor: Expected value to be an Integer" }
-
-            include_examples "invalid config errors"
-          end
-
-          context "when bad patch" do
-            let(:version) { { "version_threshold" => { "major" => 1, "minor" => 2, "patch" => "3" } } }
-            let(:error_string) { "#{gem_name}.version.version_threshold.patch: Expected value to be an Integer" }
-
-            include_examples "invalid config errors"
-          end
-
-          context "when multiple are bad" do
-            let(:version) { { "version_threshold" => { "major" => "1", "minor" => "2", "patch" => "3" } } }
-
-            it "3 errors get added" do
-              expect(instance.error_status.length).to eq(3)
-            end
-          end
-
-          context "when releases are invalid" do
-            let(:version) { { "version_threshold" => { "releases" => "6" } } }
-            let(:error_string) { "#{gem_name}.version.version_threshold.releases: Expected value to be an Integer" }
-
-            include_examples "invalid config errors"
-          end
+          expect(instance.error_status.length).to eq(1)
+          expect(instance.error_status.first).to include("#{gem_name}.behaviors: At least 1 behavior is expected")
         end
       end
     end
 
-    it do
-      expect(instance.validation_status).to be(true)
+    context "when valid" do
+      context "with server" do
+        let(:git) { nil }
+
+        it do
+          is_expected.to eq(true)
+        end
+
+        it do
+          valid_config
+
+          expect(instance.error_status).to be_nil
+        end
+      end
+
+      context "with git" do
+        let(:server) { nil }
+
+        it do
+          is_expected.to eq(true)
+        end
+
+        it do
+          valid_config
+
+          expect(instance.error_status).to be_nil
+        end
+      end
+    end
+  end
+
+  describe "#run_validation!" do
+    subject(:run_validation) { instance.run_validation! }
+
+    let(:retrieval) { instance_double(GemEnforcer::Setup::Helper::Retrieval, retrieve_version_list: version_list, valid_config?: true)}
+
+    shared_examples "with different behaviors" do
+      context "with none (Default)" do
+        let(:behaviors) { [default_behavior] }
+
+        it do
+          is_expected.to eq(false)
+        end
+
+        it "does not raise or exit" do
+          expect(Kernel).to_not receive(:exit)
+
+          expect { subject }.to_not raise_error
+        end
+      end
+
+      context "with raise" do
+        let(:behaviors) { [raise_behavior] }
+
+        it "raises error" do
+          expect { subject }.to raise_error(GemEnforcer::ValidationError, /Enforcer expects the most recent version/)
+        end
+
+        it "does not exit" do
+          expect(Kernel).to_not receive(:exit)
+
+          expect { subject }.to raise_error(StandardError)
+        end
+      end
+
+      context "with exit" do
+        let(:behaviors) { [exit_behavior] }
+        before { allow(Kernel).to receive(:exit) }
+
+        it "does not raise error" do
+          expect { subject }.to_not raise_error
+        end
+
+        it "exits" do
+          expect(Kernel).to receive(:exit)
+
+          subject
+        end
+      end
+
+      context "with multiple behaviors (Definition order is important)" do
+        context "with raise and none" do
+          let(:behaviors) { [raise_behavior, default_behavior] }
+
+          it "raises error" do
+            expect { subject }.to raise_error(GemEnforcer::ValidationError, /Enforcer expects the most recent version/)
+          end
+
+          it "logs once" do
+            expect(GemEnforcer.logger).to receive(:error).once
+
+             expect { subject }.to raise_error(GemEnforcer::ValidationError)
+          end
+        end
+
+        context "with raise and exit" do
+          let(:behaviors) { [raise_behavior, exit_behavior] }
+
+          it "raises error" do
+            expect { subject }.to raise_error(GemEnforcer::ValidationError, /Enforcer expects the most recent version/)
+          end
+
+          it "logs once" do
+            expect(GemEnforcer.logger).to receive(:error).once
+
+            expect { subject }.to raise_error(StandardError)
+          end
+        end
+
+        context "with exit and none" do
+          before { allow(Kernel).to receive(:exit).with(1).and_raise(SpecialExitTestCase, "How to catch a Kernel.exit") }
+          let(:behaviors) { [exit_behavior, default_behavior] }
+
+          it "exits" do
+            expect(Kernel).to receive(:exit)
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+
+          it "logs once" do
+            expect(GemEnforcer.logger).to receive(:error).once
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+        end
+
+        context "with exit and raise" do
+          let(:behaviors) { [exit_behavior, raise_behavior] }
+          before { allow(Kernel).to receive(:exit).with(1).and_raise(SpecialExitTestCase, "How to catch a Kernel.exit") }
+
+          it "exits" do
+            expect(Kernel).to receive(:exit)
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+
+          it "logs once" do
+            expect(GemEnforcer.logger).to receive(:error).once
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+        end
+
+        context "with none and raise" do
+          let(:behaviors) { [default_behavior, raise_behavior] }
+
+          it "raises error" do
+            expect { subject }.to raise_error(GemEnforcer::ValidationError, /Enforcer expects the most recent version/)
+          end
+
+          it "logs twice" do
+            expect(GemEnforcer.logger).to receive(:error).twice
+
+             expect { subject }.to raise_error(GemEnforcer::ValidationError)
+          end
+        end
+
+        context "with none and exit" do
+          before { allow(Kernel).to receive(:exit).with(1).and_raise(SpecialExitTestCase, "How to catch a Kernel.exit") }
+          let(:behaviors) { [default_behavior, exit_behavior] }
+
+          it "exits" do
+            expect(Kernel).to receive(:exit)
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+
+          it "logs twice" do
+            expect(GemEnforcer.logger).to receive(:error).twice
+
+            expect { subject }.to raise_error(SpecialExitTestCase)
+          end
+        end
+
+        context "with none and none" do
+        end
+      end
+    end
+
+    context "when invalid config" do
+      let(:version) { version_list.sample }
+
+      it do
+        expect { run_validation }.to raise_error(GemEnforcer::Error, /Unable to run validation/)
+      end
+    end
+
+    context "with server" do
+      before do
+        allow(GemEnforcer::Setup::Helper::Retrieval).to receive(:new).and_return(retrieval)
+        allow(instance).to receive(:current_version).and_return(version)
+      end
+
+      let(:git) { nil }
+
+      context "when valid" do
+        let(:version) { version_list.max }
+
+        it do
+          is_expected.to eq(true)
+        end
+
+        context "when version is nil (Gem not loaded)" do
+          let(:version) { nil }
+
+          it do
+            is_expected.to eq(true)
+          end
+        end
+      end
+
+      context "when invalid" do
+        let(:version) { version_list.min }
+
+        include_examples "with different behaviors"
+      end
+    end
+
+    context "with git" do
+      before do
+        allow(GemEnforcer::Setup::Helper::Retrieval).to receive(:new).and_return(retrieval)
+        allow(instance).to receive(:current_version).and_return(version)
+      end
+
+      let(:server) { nil }
+
+      context "when valid" do
+        let(:version) { version_list.max }
+
+        it do
+          is_expected.to eq(true)
+        end
+
+        context "when version is nil (Gem not loaded)" do
+          let(:version) { nil }
+
+          it do
+            is_expected.to eq(true)
+          end
+        end
+      end
+
+      context "when invalid" do
+        let(:version) { version_list.min }
+
+        include_examples "with different behaviors"
+      end
     end
   end
 
@@ -164,245 +373,6 @@ RSpec.describe GemEnforcer::Setup::Validate do
 
       it do
         is_expected.to be_nil
-      end
-    end
-  end
-
-  describe "#run_validation" do
-    subject(:run_validation) { instance.run_validation! }
-
-    let(:gem_name) { "rails_base" }
-
-    context "when gem is not found" do
-    end
-
-    context "when version_execute fails" do
-      before do
-        allow(instance).to receive(:current_version).and_return(current_version)
-      end
-
-      let(:current_version) { Gem::Version.new("0.40.0") }
-
-      shared_examples "version_execution logger expectations" do
-        context "with default log_level" do
-          it "outputs to default logger" do
-            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
-
-            subject
-          end
-        end
-
-        context "with custom log_level" do
-          let(:on_failure) { { "on_failure" => { "log_level" => "error" } } }
-
-          it "outputs to custom logger" do
-            expect(GemEnforcer.logger).to receive(:error).with(/Validation failed for #{gem_name}. Current Version is #{current_version}/)
-
-            subject
-          end
-        end
-      end
-
-      shared_examples "version_execution behavior expectations" do
-        before { allow(Kernel).to receive(:exit).with(1) }
-
-        context "with behavior raise" do
-          let(:on_failure) { { "on_failure" => { "behavior" => "raise" } } }
-
-          it do
-            expect { subject }.to raise_error(GemEnforcer::ValidationError, /Validation failed for #{gem_name}/)
-          end
-        end
-
-        context "with behavior none" do
-          let(:on_failure) { { "on_failure" => { "behavior" => "none" } } }
-
-          it "does nothing" do
-            expect { subject }.not_to raise_error
-          end
-
-          it do
-            is_expected.to be(false)
-          end
-        end
-
-        context "with behavior exit" do
-          let(:on_failure) { { "on_failure" => { "behavior" => "exit" } } }
-
-          it "exits" do
-            expect(Kernel).to receive(:exit).with(1) # important to stub this out
-
-            subject
-          end
-        end
-
-        context "with custom behavior" do
-        end
-      end
-
-      shared_examples "version_execution failures" do
-        context "with git" do
-          let(:retrieval) { { "git" => { "owner" => owner } } }
-
-          include_examples "version_execution behavior expectations"
-          include_examples "version_execution logger expectations"
-        end
-
-        context "with server" do
-          let(:retrieval) { { "server" => true } }
-
-          include_examples "version_execution behavior expectations"
-          include_examples "version_execution logger expectations"
-        end
-      end
-
-      context "with enforce_insync" do
-        let(:version) { { "enforce_insync" => true } }
-
-        include_examples "version_execution failures"
-      end
-
-      context "with releases" do
-        let(:version) { { "version_threshold" => { "releases" => 2 } } }
-
-        include_examples "version_execution failures"
-      end
-
-      context "with version_threshold" do
-        let(:gem_name) { "rails" }
-        let(:owner) { "rails" }
-        let(:current_version) { Gem::Version.new("6.0.4") }
-        let(:version) do
-          {
-            "version_threshold" => {
-              "major" => major,
-              "minor" => minor,
-              "patch" => patch,
-            }.compact
-          }
-        end
-
-        let(:major) { 5 }
-        let(:minor) { 5 }
-        let(:patch) { 5 }
-
-        context "when major version outdated" do
-          let(:major) { 0 }
-
-          it "logs correctly" do
-            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match major version threshold/)
-
-            subject
-          end
-
-          include_examples "version_execution failures"
-        end
-
-        context "when minor version outdated" do
-          let(:minor) { 0 }
-
-          it "logs correctly" do
-            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match minor version threshold/)
-
-            subject
-          end
-
-          include_examples "version_execution failures"
-        end
-
-        context "when patch version outdated" do
-          let(:patch) { 0 }
-
-          it "logs correctly" do
-            expect(GemEnforcer.logger).to receive(described_class::DEFAULT_LOG_LEVEL).with(/Failed to match patch version threshold/)
-
-            subject
-          end
-
-          include_examples "version_execution failures"
-        end
-      end
-    end
-
-    context "when version_execute succeeds" do
-      before do
-        allow(instance).to receive(:current_version).and_return(current_version)
-      end
-      let(:current_version) { Gem::Version.new("1") }
-
-      shared_examples "version_execution success" do
-        context "with git" do
-          let(:retrieval) { { "git" => { "owner" => owner } } }
-
-          it do
-            expect { subject }.to_not raise_error
-          end
-
-          it do
-            is_expected.to eq(true)
-          end
-        end
-
-        context "with server" do
-          let(:retrieval) { { "server" => true } }
-
-          it do
-            expect { subject }.to_not raise_error
-          end
-
-          it do
-            is_expected.to eq(true)
-          end
-        end
-      end
-
-      context "with enforce_insync" do
-        let(:version) { { "enforce_insync" => true } }
-
-        include_examples "version_execution success"
-      end
-
-      context "with releases" do
-        let(:version) { { "version_threshold" => { "releases" => 2 } } }
-
-        include_examples "version_execution success"
-      end
-
-      context "with version_threshold" do
-        let(:gem_name) { "rails" }
-        let(:owner) { "rails" }
-        let(:current_version) { Gem::Version.new("6.0.4") }
-        let(:version) do
-          {
-            "version_threshold" => {
-              "major" => major,
-              "minor" => minor,
-              "patch" => patch,
-            }.compact
-          }
-        end
-
-        let(:major) { nil }
-        let(:minor) { nil }
-        let(:patch) { nil }
-
-        context "when only major provided" do
-          let(:major) { 5 }
-
-          include_examples "version_execution success"
-        end
-
-        context "when only minor provided" do
-          let(:minor) { 5 }
-
-          include_examples "version_execution success"
-        end
-
-        context "when only patch provided" do
-          let(:patch) { 5 }
-
-          include_examples "version_execution success"
-        end
       end
     end
   end
