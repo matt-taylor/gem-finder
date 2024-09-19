@@ -1,0 +1,40 @@
+# This config file will ensure Rails gem is up to date with the most recent release
+# It uses the default rubygems.org ruby server to query versions against
+# It has two behaviors
+# Behavior 1:
+# => Must be within the last 3 releases
+# => When not within last 3 releases, it will log message and exit immediately
+# Behavior 2:
+# => Must be within the last 2 releases
+# => When not within last 2 releases, it will log message and continue
+# => Behavior is seen as a warning
+#
+# With multiple behaviors, order is important. If order was switched, if more than 3 releases behind,
+# both messages would be shown to user instead of just one
+# => Log Message via ERROR
+# => Do nothing
+
+# Config can support multiple gems!!
+---
+gems:
+  rails: # Enforce the gem Rails
+    server: true # Use the default gem server (https://rubygems.org)
+    behaviors: # Array of different behavior -- Order matters here
+      - version_enforce:
+          releases: 3 # Behavior 1 will trigger when the current version is greater than the 3rd most recent and beyond
+        on_failure:
+          log_level: error # Log Level to output (This can be a custom log level based on your logger)
+          # message: Custom Message to output # There is a default message and this is optional but takes precedence
+          behavior: exit # When behavior is triggered, exit the application immediately
+      - version_enforce:
+          releases: 2 # Behavior 2 will trigger when the current version is 2nd most recent and beyond
+        on_failure:
+          log_level: warn # Log Level to output (This can be a custom log level based on your logger)
+          # Message can have interpolated strings: `version` => current version, `versions_behind` => versions behind, `max_version` => most recent version
+          message: "You are running rails v%{version} which is %{versions_behind} versions behind. Please consider updating"
+
+  sidekiq:
+    server: https://rubygems.org # Input your custom server here
+    behaviors:
+      - version_enforce:
+          insync: true # Behavior 1 triggered as soon as version is not the most recent

@@ -1,0 +1,26 @@
+# This config file will ensure rails_base gem is up to date based on SemVer specifics
+# NOTE: Usage of git is a bit more expensive and will consume Github API get operations that are counted towards rate limit
+# Major:
+# Major version is set to 0. This will enforce that the gem is up to date with the latest major.
+# If the current major version does not equal what is  released, failure behavior is triggered
+#
+# Patch:
+# Given the current versions major.minor, the patch version is expected to be within the most 2 recent releases
+# If not, it will trigger a failure
+#
+# Notice that minor is missing. This means it does not matter what minor version the current gem is on only that it is
+# on the most recent major version and within 2 of the most recent patches released for the given minor version
+#
+# On Failure:
+# Using log level Error, output the default message and then raise an error
+---
+gems:
+  rails_base: # Enforce the gem rails_base
+    git: matt-taylor # Using git tags where the owner is matt-taylor and the gem name is rails_base
+    behaviors: # Array of different behavior -- Order matters here
+      - version_enforce:
+          major: 0 # Must be on at least the most recent major version
+          patch: 2 # For the given current major.minor version, must be within at least 2 patches
+        on_failure:
+          log_level: error # Log Level to output (This can be a custom log level based on your logger)
+          behavior: raise

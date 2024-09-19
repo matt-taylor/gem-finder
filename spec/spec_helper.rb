@@ -12,7 +12,8 @@ end
 require "gem_enforcer"
 require "faker"
 require "pry"
-require "active_support"
+
+class SpecialExitTestCase < GemEnforcer::Error; end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

@@ -4,8 +4,6 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "faraday", "< 2.6"
-gem 'activesupport'
 gem 'faker'
 gem 'pry'
 gem 'rspec', '~> 3.0'
