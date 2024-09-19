@@ -62,7 +62,7 @@ module GemEnforcer
           return true if version >= min_version_allowed
 
           if index = version_list.sort.reverse.find_index(version)
-            version_text = "Version [#{version}] is the #{version_list.length - index} newest version."
+            version_text = "Version [#{version}] is the #{index} oldest version."
           else
             version_text = "Version [#{version}] is the was not found in the provided list."
           end

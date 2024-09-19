@@ -1,0 +1,14 @@
+# This config file will ensure Sidekiq gem is up to date with the most recent release
+# When this is not met, it will use the default failure behavior
+# => Log Message via ERROR
+# => Do nothing
+---
+gems:
+  sidekiq:
+    server: https://rubygems.org # Input your custom server here
+    behaviors:
+      - version_enforce:
+          insync: true # Behavior 1 triggered as soon as version is not the most recent
+        # on_failure: This is the default on_failure behavior when none is provided
+        #   log_level: error
+        #   behavior: # none Logs message and returns
