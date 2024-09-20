@@ -47,7 +47,7 @@ module GemEnforcer
       def run_failure!(message:, version:, version_list:)
         params = {
           version:,
-          c: version_list.max,
+          max_version: version_list.max,
           versions_behind: version_enforcer.versions_behind(version_list:, version:),
         }
         on_failure.run_on_failure!(message:, **params)
