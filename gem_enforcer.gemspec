@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage    = "https://github.com/matt-taylor/gem_enforcer"
   spec.license     = "MIT"
 
-  spec.required_ruby_version = Gem::Requirement.new(">= 3.2")
+  spec.required_ruby_version = Gem::Requirement.new(">= 3.1")
 
   spec.metadata = {
     "homepage_uri" => spec.homepage,
